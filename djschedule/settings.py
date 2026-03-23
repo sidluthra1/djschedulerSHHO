@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'users',
     'lessonscheduler',
     'messaging',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -163,3 +164,10 @@ SOCIALACCOUNT_PROVIDERS = {
 
 LOGIN_REDIRECT_URL = '/'
 SOCIALACCOUNT_LOGIN_ON_GET = True
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = 'AKIAUWYLKZ3SM32IMYRC'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'amazn-s3-dj-proj'
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = False
