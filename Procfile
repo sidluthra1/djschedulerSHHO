@@ -1,1 +1,2 @@
-web: gunicorn djschedule.wsgi
+release: python manage.py migrate --noinput
+web: gunicorn djschedule.wsgi --log-file -

@@ -30,7 +30,16 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'dj-lesson-scheduler-swe-a-12-ddb7c472ccde.herokuapp.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'dj-lesson-scheduler-swe-a-12-ddb7c472ccde.herokuapp.com', '.herokuapp.com']
+
+CSRF_TRUSTED_ORIGINS = ['https://*.herokuapp.com']
+
+if not DEBUG:
+    # Heroku terminates SSL at its router and forwards the original scheme in this header.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 
 # Application definition
@@ -79,6 +88,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'djschedule.context_processors.google_login',
             ],
         },
     },
@@ -162,6 +172,8 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+GOOGLE_LOGIN_ENABLED = bool(os.getenv('CLIENT_ID') and os.getenv('CLIENT_SECRET'))
+
 LOGIN_REDIRECT_URL = '/'
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
@@ -172,24 +184,28 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_USERNAME_REQUIRED = True
 
-# For both static and media files
+# Static files are bundled with the app and served by WhiteNoise.
+# Uploaded media goes to S3 when a bucket is configured, otherwise local disk.
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+
+if AWS_STORAGE_BUCKET_NAME:
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "us-east-2")
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = False
+    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/"
+    DEFAULT_STORAGE_BACKEND = "storages.backends.s3boto3.S3Boto3Storage"
+else:
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+    DEFAULT_STORAGE_BACKEND = "django.core.files.storage.FileSystemStorage"
+
 STORAGES = {
     "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "BACKEND": DEFAULT_STORAGE_BACKEND,
     },
     "staticfiles": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
-
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-
-
-AWS_ACCESS_KEY_ID = 'AKIAUWYLKZ3SM32IMYRC'
-AWS_SECRET_ACCESS_KEY = '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'
-AWS_STORAGE_BUCKET_NAME = 'amazn-s3-dj-proj'
-AWS_S3_REGION_NAME = 'us-east-2'
-AWS_DEFAULT_ACL = None
-AWS_QUERYSTRING_AUTH = False
-MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/"
-

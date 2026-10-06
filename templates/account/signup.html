@@ -319,11 +319,13 @@ The Best DJs at UVA!
 
 </form>
 
+{% if google_login_enabled %}
 <div class="divider"><span>Or</span></div>
 
 <a class="google-btn" href="{% provider_login_url 'google' %}">
 Sign Up with Google
 </a>
+{% endif %}
 
 <p class="signup-text">
 Already have an account?
